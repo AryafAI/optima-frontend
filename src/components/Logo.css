@@ -1,0 +1,25 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.logo-mark { display: flex; align-items: center; justify-content: center; }
+.logo-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.logo-tag {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin-top: 2px;
+}

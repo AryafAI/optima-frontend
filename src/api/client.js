@@ -1,20 +1,27 @@
 // API client for the Optima FastAPI backend.
 //
-// Behavior:
-//   - If VITE_API_URL is set (in .env), each call hits the real backend.
-//   - If not set, calls return null and the UI falls back to mock data.
-//   - On network/HTTP errors we throw so the caller can fall back to mocks.
+// Defaults to http://localhost:8000 so the integration works out of the box.
+// To point at a different backend, create a .env file with:
+//     VITE_API_URL=https://api.your-host.com
+// To force mock-only mode (e.g. for offline demos), set:
+//     VITE_API_URL=
+//
+// All calls return null when the API is disabled. On network/HTTP errors we
+// throw so the caller can decide whether to fall back to mock data.
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+const RAW = import.meta.env.VITE_API_URL
+const API_URL = RAW === undefined ? 'http://localhost:8000' : RAW.trim()
 
 export const isApiEnabled = () => Boolean(API_URL)
+export const apiUrl       = () => API_URL
 
-async function postJson(path, body) {
+async function postJson(path, body, signal) {
   if (!API_URL) return null
   const res = await fetch(`${API_URL}${path}`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body:    JSON.stringify(body),
+    signal,
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -23,11 +30,28 @@ async function postJson(path, body) {
   return res.json()
 }
 
-async function getJson(path) {
+async function getJson(path, signal) {
   if (!API_URL) return null
-  const res = await fetch(`${API_URL}${path}`)
+  const res = await fetch(`${API_URL}${path}`, { signal })
   if (!res.ok) throw new Error(`Request failed (${res.status})`)
   return res.json()
+}
+
+// Lightweight health probe — used on app load to decide whether the dashboard
+// runs in "Live API" mode or falls back to mock data with a warning.
+export async function pingBackend(timeoutMs = 2500) {
+  if (!API_URL) return { ok: false, reason: 'disabled' }
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetch(`${API_URL}/`, { signal: ctrl.signal })
+    if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` }
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, reason: e.name === 'AbortError' ? 'timeout' : 'unreachable' }
+  } finally {
+    clearTimeout(t)
+  }
 }
 
 export const api = {
@@ -47,7 +71,7 @@ export function backendResultToChartData(result) {
   if (result.scenario === 'extended_discount' && Array.isArray(result.monthly_detail)) {
     for (const m of result.monthly_detail) {
       months.push({
-        month:     `${m.month} 2024`,
+        month:     m.month,
         baseline:  m.baseline_sales,
         predicted: m.new_sales,
       })

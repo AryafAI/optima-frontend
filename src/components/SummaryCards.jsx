@@ -1,35 +1,33 @@
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import './SummaryCards.css'
 
+// Three clean numeric cards. No mini chart, no long descriptions.
 export default function SummaryCards({ totals }) {
-  const trend = [40, 45, 50, 48, 56, 60, 65, 70, 75, 80, 88, 95]
+  const change = (totals.predicted ?? 0) - (totals.baseline ?? 0)
+  const sign   = change >= 0 ? '+' : '-'
+  const absChange = Math.abs(change)
+  const pct  = totals.changePct ?? 0
+  const positive = pct >= 0
 
   return (
     <div className="summary-row">
       <div className="summary-card">
-        <div className="summary-label">Baseline Total</div>
-        <div className="summary-value purple">SAR {totals.baseline.toLocaleString()}</div>
-        <div className="summary-sub">Total sales without changes</div>
+        <div className="summary-label">Baseline Sales</div>
+        <div className="summary-value baseline">SAR {Math.round(totals.baseline).toLocaleString()}</div>
       </div>
 
       <div className="summary-card">
-        <div className="summary-label">Predicted Total</div>
-        <div className="summary-value blue">SAR {totals.predicted.toLocaleString()}</div>
-        <div className="summary-sub">Total sales with scenario</div>
+        <div className="summary-label">Predicted Sales</div>
+        <div className="summary-value predicted">SAR {Math.round(totals.predicted).toLocaleString()}</div>
       </div>
 
-      <div className="summary-card change">
-        <div className="summary-label">Change</div>
-        <div className="summary-value green">↑ {totals.changePct}%</div>
-        <div className="summary-sub">Increase in sales</div>
-      </div>
-
-      <div className="summary-trend">
-        <ResponsiveContainer width="100%" height={70}>
-          <LineChart data={trend.map((v, i) => ({ x: i, v }))}>
-            <Line type="monotone" dataKey="v" stroke="#10b981" strokeWidth={2.5} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className={`summary-card change ${positive ? 'pos' : 'neg'}`}>
+        <div className="summary-label">Prediction Change</div>
+        <div className={`summary-value ${positive ? 'green' : 'red'}`}>
+          {positive ? '↑' : '↓'} {Math.abs(pct).toFixed(1)}%
+        </div>
+        <div className="summary-amount">
+          {sign}SAR {Math.round(absChange).toLocaleString()}
+        </div>
       </div>
     </div>
   )

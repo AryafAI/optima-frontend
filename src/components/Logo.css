@@ -8,7 +8,20 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
 }
-.logo-mark { display: flex; align-items: center; justify-content: center; }
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+.logo-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+}
 .logo-name {
   font-size: 18px;
   font-weight: 800;

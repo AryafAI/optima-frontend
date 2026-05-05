@@ -79,36 +79,66 @@ npm run preview
 
 ---
 
-## ربط الباك إند (FastAPI)
+## ربط الباك إند (FastAPI) — Full-stack mode
 
-الكود معدّ مسبقًا للاتصال بالـ backend، ويستخدم mock data تلقائيًا لو الباك إند مو شغال.
+الفرونت إند **يحاول الباك إند تلقائيًا** على `http://localhost:8000` بدون أي ملف
+`.env`. شغلي الاثنين معًا في ترمنالين منفصلين.
 
-### تفعيل الاتصال:
+### Terminal 1 — Backend
 
-1. شغلي `api.py` من مشروع Optima:
-   ```powershell
-   cd C:\path\to\Optima
-   uvicorn api:app --reload
-   ```
-   (يشتغل على http://localhost:8000)
+```powershell
+cd C:\Users\Aryaf\Documents\Optima
 
-2. في مجلد `optima-frontend`، انسخي `.env.example` لـ `.env`:
-   ```powershell
-   copy .env.example .env
-   ```
+# مرة وحدة فقط (لو ما ركبتي المكتبات قبل):
+# pip install fastapi uvicorn pandas xgboost openai chromadb sentence-transformers python-dotenv pydantic
 
-3. تأكدي إن `.env` فيه:
-   ```
-   VITE_API_URL=http://localhost:8000
-   ```
+# تشغيل
+uvicorn api:app --reload
+```
 
-4. أعيدي تشغيل `npm run dev` (لازم بعد كل تعديل في `.env`).
+→ Backend يشتغل على http://localhost:8000
+
+### Terminal 2 — Frontend
+
+```powershell
+cd $env:USERPROFILE\Desktop\optima-frontend
+npm run dev
+```
+
+→ Frontend يشتغل على http://localhost:5173
+
+### Connection Status Badge
+
+فوق يمين الداشبورد بيظهر badge صغير يعرض حالة الاتصال:
+
+- 🟢 **Live API** — الباك إند موصول، النتائج حقيقية من XGBoost model
+- 🟡 **Mock data** — الباك إند مو موصول، الواجهة شغالة بـ mock data
+- ⚪ **Connecting…** — يتفحص الاتصال الآن
+- ⚫ **Mock only** — `VITE_API_URL` فاضي عمدًا
+
+### تخصيص الـ API URL (اختياري)
+
+لو الباك إند على بورت أو سيرفر مختلف، سوي ملف `.env`:
+
+```
+VITE_API_URL=http://192.168.1.10:8000
+```
+
+ثم Ctrl+C في الترمنال وأعيدي `npm run dev`.
+
+### تشغيل بدون باك إند (mock only)
+
+سوّي ملف `.env` فيه:
+```
+VITE_API_URL=
+```
+الفرونت إند بيستخدم mock data بدون ما يحاول الباك إند.
 
 ### كيف يشتغل الـ fallback؟
 
-- لو `VITE_API_URL` فاضي أو ملف `.env` غير موجود → mock data مباشرة.
-- لو معبّأ بس الباك إند مو شغال → banner أصفر "Backend not reachable" + سقوط على mock data.
-- لو الباك إند شغال → نتائج حقيقية من الـ XGBoost model.
+- على load: ping على `GET /` — لو فشل، الـ badge يصير 🟡 Mock data.
+- لما تشغّلين سيناريو والباك إند يردّ، الـ badge يرجع 🟢 Live API.
+- لو الباك إند طاح أثناء الاستخدام، next request يرجّع 🟡 + banner أصفر بسبب الخطأ.
 
 ---
 

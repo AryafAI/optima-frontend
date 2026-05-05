@@ -18,66 +18,22 @@ export default function ScenarioControls({
   onRun,
   running,
 }) {
-  const [scenarioOpen, setScenarioOpen] = useState(false)
-  const dropdownRef = useRef(null)
-
-  useEffect(() => {
-    const onClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setScenarioOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [])
-
   const product = PRODUCTS.find((p) => p.id === productId) || PRODUCTS[0]
-  const scenario = SCENARIOS.find((s) => s.id === scenarioId) || SCENARIOS[0]
 
   return (
     <div className="scenario-panel">
       <div className="scenario-header">
-        <div>
-          <h2 className="panel-title">Scenario Simulation</h2>
-          <p className="panel-sub">Test different pricing scenarios and see the impact on sales</p>
-        </div>
-
-        <div className="scenario-pickers">
-          <div className="scenario-pill ghost">Select Scenario</div>
-          <div className="scenario-dropdown" ref={dropdownRef}>
-            <button
-              type="button"
-              className="scenario-pill active"
-              onClick={() => setScenarioOpen((v) => !v)}
-              aria-expanded={scenarioOpen}
-            >
-              <UpRightIcon />
-              <span>{scenario.label}</span>
-              <ChevronIcon className={scenarioOpen ? 'rotated' : ''} />
-            </button>
-            {scenarioOpen && (
-              <div className="scenario-menu">
-                {SCENARIOS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`scenario-menu-item ${s.id === scenarioId ? 'selected' : ''}`}
-                    onClick={() => {
-                      onScenarioChange(s.id)
-                      setScenarioOpen(false)
-                    }}
-                  >
-                    <span>{s.label}</span>
-                    {s.id === scenarioId && <CheckIcon />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <h2 className="panel-title">Scenario Simulation</h2>
+        <p className="panel-sub">Test different pricing scenarios and see the impact on sales</p>
       </div>
 
       <div className="control-grid">
+        {/* Scenario selector — same style as Product (label above, single dropdown) */}
+        <div className="control-group">
+          <label className="control-label">Select Scenario</label>
+          <ScenarioSelect value={scenarioId} onChange={onScenarioChange} />
+        </div>
+
         <div className="control-group">
           <label className="control-label">Select Product</label>
           <ProductSelect value={productId} onChange={onProductChange} />
@@ -128,22 +84,6 @@ export default function ScenarioControls({
           </>
         )}
 
-        {scenarioId === 'price_change' && (
-          <div className="control-group">
-            <label className="control-label">Select Period</label>
-            <div className="month-row">
-              <div className="month-col">
-                <span className="control-sublabel">Start Month</span>
-                <MonthSelect value={startMonth} onChange={onStartMonthChange} />
-              </div>
-              <div className="month-col">
-                <span className="control-sublabel">End Month</span>
-                <MonthSelect value={endMonth} onChange={onEndMonthChange} />
-              </div>
-            </div>
-          </div>
-        )}
-
         <button
           type="button"
           className="run-button"
@@ -154,6 +94,45 @@ export default function ScenarioControls({
           <span>{running ? 'Running...' : 'Run Scenario'}</span>
         </button>
       </div>
+    </div>
+  )
+}
+
+// New: scenario dropdown — same look as ProductSelect (icon + label + chevron)
+function ScenarioSelect({ value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [])
+  const current = SCENARIOS.find((s) => s.id === value) || SCENARIOS[0]
+  return (
+    <div className="custom-select" ref={ref}>
+      <button type="button" className="select-trigger" onClick={() => setOpen((v) => !v)}>
+        <span className="scenario-icon" aria-hidden="true">
+          <UpRightIcon />
+        </span>
+        <span className="select-value">{current.label}</span>
+        <ChevronIcon className={open ? 'rotated' : ''} />
+      </button>
+      {open && (
+        <div className="select-menu">
+          {SCENARIOS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={`select-item ${s.id === value ? 'selected' : ''}`}
+              onClick={() => { onChange(s.id); setOpen(false) }}
+            >
+              <span className="scenario-icon"><UpRightIcon /></span>
+              <span>{s.label}</span>
+              {s.id === value && <CheckIcon />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -223,7 +202,7 @@ function MonthSelect({ value, onChange }) {
         onChange={(e) => onChange(parseInt(e.target.value))}
       >
         {MONTHS.map((m) => (
-          <option key={m.value} value={m.value}>{m.label} 2024</option>
+          <option key={m.value} value={m.value}>{m.label}</option>
         ))}
       </select>
     </div>
@@ -267,7 +246,7 @@ function CheckIcon() {
 }
 function UpRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="7" y1="17" x2="17" y2="7"/>
       <polyline points="7 7 17 7 17 17"/>
     </svg>

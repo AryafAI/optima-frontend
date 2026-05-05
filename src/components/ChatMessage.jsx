@@ -1,6 +1,6 @@
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import './ChatMessage.css'
 
+// Plain text bubbles only — no inline charts.
 export default function ChatMessage({ message }) {
   const isUser = message.sender === 'user'
 
@@ -8,9 +8,7 @@ export default function ChatMessage({ message }) {
     return (
       <div className="msg msg-user">
         <div className="msg-label">You</div>
-        <div className="msg-bubble user">
-          {message.text}
-        </div>
+        <div className="msg-bubble user">{message.text}</div>
         <div className="msg-time">{message.time}</div>
       </div>
     )
@@ -24,29 +22,8 @@ export default function ChatMessage({ message }) {
         </div>
         <div className="msg-label-bot">Optima</div>
       </div>
-      <div className="msg-bubble bot">
-        {message.text}
-      </div>
+      <div className="msg-bubble bot">{message.text}</div>
       <div className="msg-time">{message.time}</div>
-
-      {message.chart && (
-        <div className="msg-chart">
-          <ResponsiveContainer width="100%" height={68}>
-            <LineChart data={message.chart.map((v, i) => ({ x: i, v }))}>
-              <Line
-                type="monotone"
-                dataKey="v"
-                stroke="#3b82f6"
-                strokeWidth={2.5}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-          {message.delta && (
-            <div className="msg-delta">{message.delta}</div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
@@ -56,7 +33,7 @@ function BotIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="7" width="18" height="13" rx="3"/>
       <path d="M12 7V3"/>
-      <circle cx="9" cy="13" r="1"/>
+      <circle cx="9"  cy="13" r="1"/>
       <circle cx="15" cy="13" r="1"/>
       <path d="M9 17h6"/>
     </svg>

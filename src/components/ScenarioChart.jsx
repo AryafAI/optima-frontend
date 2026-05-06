@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from 'react'
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Cell,
@@ -9,14 +8,6 @@ import './ScenarioChart.css'
 // - For Price Increase / Discount Change: 2 bars total (one Baseline, one Predicted).
 // - For Extended Discount: monthly grouped bars across the selected period.
 export default function ScenarioChart({ result }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  useEffect(() => {
-    const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', fn)
-    return () => document.removeEventListener('mousedown', fn)
-  }, [])
-
   const formatTick = (v) => (v >= 1000 ? `${Math.round(v / 1000)}K` : v)
   const isMonthly = result?.type === 'monthly'
 
@@ -32,23 +23,6 @@ export default function ScenarioChart({ result }) {
             <span className="legend-text">Predicted</span>
           </div>
         </div>
-        {isMonthly && (
-          <div className="chart-period" ref={ref}>
-            <button type="button" className="period-btn" onClick={() => setOpen((v) => !v)}>
-              <span>Monthly</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            {open && (
-              <div className="period-menu">
-                <button type="button" className="period-item selected">Monthly</button>
-                <button type="button" className="period-item disabled">Weekly (soon)</button>
-                <button type="button" className="period-item disabled">Yearly (soon)</button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="chart-area">

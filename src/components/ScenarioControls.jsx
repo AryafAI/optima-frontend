@@ -7,6 +7,7 @@ export default function ScenarioControls({
   onScenarioChange,
   productId,
   onProductChange,
+  currentPrice,
   priceIncrease,
   onPriceIncreaseChange,
   discount,
@@ -19,6 +20,9 @@ export default function ScenarioControls({
   running,
 }) {
   const product = PRODUCTS.find((p) => p.id === productId) || PRODUCTS[0]
+  // Prefer the real backend price; fall back to the local catalog price.
+  const priceToShow = (typeof currentPrice === 'number') ? currentPrice : product.basePrice
+  const priceLine = `Current Price: SAR ${priceToShow}`
 
   return (
     <div className="scenario-panel">
@@ -50,7 +54,7 @@ export default function ScenarioControls({
               max={500}
               step={5}
             />
-            <div className="control-hint">Current Price: SAR {product.basePrice}</div>
+            <div className="control-hint">{priceLine}</div>
           </div>
         )}
 
@@ -58,7 +62,7 @@ export default function ScenarioControls({
           <div className="control-group">
             <label className="control-label">Discount</label>
             <DiscountSelect value={discount} onChange={onDiscountChange} />
-            <div className="control-hint">Choose a fixed promotional rate</div>
+            <div className="control-hint">{priceLine}</div>
           </div>
         )}
 
@@ -67,6 +71,7 @@ export default function ScenarioControls({
             <div className="control-group">
               <label className="control-label">Discount</label>
               <DiscountSelect value={discount} onChange={onDiscountChange} />
+              <div className="control-hint">{priceLine}</div>
             </div>
             <div className="control-group">
               <label className="control-label">Select Period</label>

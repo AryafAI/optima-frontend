@@ -56,6 +56,7 @@ export async function pingBackend(timeoutMs = 2500) {
 
 export const api = {
   getProducts:    ()        => getJson('/products'),
+  getOverview:    ()        => getJson('/overview'),
   whatifPrice:    (payload) => postJson('/whatif/price',    payload),
   whatifDiscount: (payload) => postJson('/whatif/discount', payload),
   whatifExtended: (payload) => postJson('/whatif/extended', payload),

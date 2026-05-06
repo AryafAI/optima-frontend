@@ -15,8 +15,24 @@ const formatSAR = (n) => `SAR ${Math.round(n).toLocaleString()}`
 const formatNum = (n) => n.toLocaleString()
 
 export default function App() {
-  // Top KPI overview computed from latest 4 rows per product
-  const overview = computeOverviewKpis()
+  // Overview KPIs — start from local fallback, replace with real backend numbers on mount
+  const [overview, setOverview] = useState(() => {
+    const k = computeOverviewKpis()
+    return {
+      total_quantity_sold: k.totalQuantity,
+      total_sales:         k.totalSales,
+      total_profit:        k.totalProfit,
+      top_product:         k.topProduct,
+    }
+  })
+
+  // Real per-product prices fetched from /products. Map: { 8999: 56.5, ... }
+  // Falls back to the hardcoded basePrice in PRODUCTS until /products responds.
+  const [productPrices, setProductPrices] = useState(() => {
+    const m = {}
+    for (const p of PRODUCTS) m[p.id] = p.basePrice
+    return m
+  })
 
   // Scenario state
   const [scenarioId,    setScenarioId]    = useState('price_change')
@@ -35,10 +51,11 @@ export default function App() {
   )
   const [backendStatusErr, setBackendStatusErr] = useState(null)
 
-  // Ping the backend on mount so we know which mode the dashboard is in.
+  // Ping + fetch real KPIs and prices on mount.
   useEffect(() => {
     if (!isApiEnabled()) return
     let cancelled = false
+
     pingBackend().then((res) => {
       if (cancelled) return
       if (res.ok) {
@@ -49,6 +66,24 @@ export default function App() {
         setBackendStatusErr(res.reason)
       }
     })
+
+    // Real overview KPIs from /overview
+    api.getOverview()
+      .then((data) => { if (!cancelled && data) setOverview(data) })
+      .catch((err) => console.warn('[overview] backend failed, using mock:', err?.message))
+
+    // Real per-product current prices from /products
+    api.getProducts()
+      .then((list) => {
+        if (cancelled || !Array.isArray(list)) return
+        const next = {}
+        for (const p of list) {
+          if (typeof p.current_price === 'number') next[p.id] = p.current_price
+        }
+        if (Object.keys(next).length) setProductPrices(next)
+      })
+      .catch((err) => console.warn('[products] backend failed, using mock:', err?.message))
+
     return () => { cancelled = true }
   }, [])
 
@@ -185,25 +220,25 @@ export default function App() {
             accent="blue"
             icon={<BoxIcon />}
             label="Total Quantity Sold"
-            value={formatNum(overview.totalQuantity)}
+            value={formatNum(overview.total_quantity_sold)}
           />
           <KPICard
             accent="cyan"
             icon={<DollarIcon />}
             label="Total Sales"
-            value={formatSAR(overview.totalSales)}
+            value={formatSAR(overview.total_sales)}
           />
           <KPICard
             accent="green"
             icon={<TrendIcon />}
             label="Total Profit"
-            value={formatSAR(overview.totalProfit)}
+            value={formatSAR(overview.total_profit)}
           />
           <KPICard
             accent="purple"
             icon={<DressBigIcon />}
             label="Top Selling Product"
-            value={overview.topProduct.name}
+            value={overview.top_product?.name || '—'}
           />
         </div>
 
@@ -215,6 +250,7 @@ export default function App() {
               onScenarioChange={onScenarioChange}
               productId={productId}
               onProductChange={setProductId}
+              currentPrice={productPrices[productId]}
               priceIncrease={priceIncrease}
               onPriceIncreaseChange={setPriceIncrease}
               discount={discount}

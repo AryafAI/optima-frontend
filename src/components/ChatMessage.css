@@ -33,12 +33,15 @@
 }
 
 .msg-bubble {
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 14px;
   font-size: 13.5px;
-  line-height: 1.5;
+  line-height: 1.6;
   max-width: 100%;
   word-wrap: break-word;
+  /* Preserve line breaks (and blank lines) so the three-paragraph what-if
+     answer renders as in the design — separate paragraphs with breathing room. */
+  white-space: pre-wrap;
 }
 .msg-bubble.user {
   background: #f1f5f9;
@@ -51,6 +54,11 @@
   color: var(--color-text);
   border-bottom-left-radius: 4px;
   width: 100%;
+}
+/* Tighten the spacing on the "Key numbers:" header line of structured answers */
+.msg-bubble.bot {
+  /* No extra rules needed — pre-wrap handles everything. This block exists for
+     clarity if you want to add styling for specific answer sections later. */
 }
 
 .msg-time {
